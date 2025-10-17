@@ -1,6 +1,6 @@
 <template>
   <div class="container">
-    <h1>🗒️ To-Do List (Local DB)</h1>
+    <h1>🗒️ To-Do List</h1>
 
     <form class="form" @submit.prevent="addTask">
       <input v-model="newTask.title" type="text" placeholder="Deskripsi tugas" required />
