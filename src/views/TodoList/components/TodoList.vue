@@ -39,10 +39,18 @@ const newTask = ref({
   completed: false,
 });
 
-onMounted(() => {
-  const saved = localStorage.getItem("tasks");
-  if (saved) tasks.value = JSON.parse(saved);
+onMounted(async () => {
+  await fetchTasks();
 });
+
+async function fetchTasks() {
+  try {
+    const res = await api.get("/todos");
+    tasks.value = res.data;
+  } catch (err) {
+    console.error("Gagal ambil data:", err);
+  }
+}
 
 function addTask() {
   const task = {
