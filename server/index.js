@@ -7,16 +7,15 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Konfigurasi koneksi ke PostgreSQL
+
 const pool = new Pool({
   user: "postgres",
   host: "localhost",
   database: "todo_db",
-  password: "12345678", // ganti sesuai PostgreSQL kamu
+  password: "12345678", 
   port: 5432,
 });
 
-// GET semua data
 app.get("/todos", async (req, res) => {
   try {
     const result = await pool.query("SELECT * FROM todos ORDER BY id ASC");
