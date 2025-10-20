@@ -4,7 +4,6 @@
 
     <form class="form" @submit.prevent="addTask">
       <input v-model="newTask.title" type="text" placeholder="Deskripsi tugas" required />
-      <input v-model="newTask.dueDate" type="date" required />
       <button type="submit">Tambah</button>
     </form>
 
@@ -16,10 +15,7 @@
     <ul class="task-list">
       <li v-for="task in tasks" :key="task.id">
         <div class="task">
-          <div class="task-info">
-            <strong>{{ task.title }}</strong>
-            <p>Deadline: {{ formatDate(task.dueDate) }}</p>
-          </div>
+          <strong>{{ task.title }}</strong>
           <button class="done" @click="toggleComplete(task)">
             {{ task.completed ? "✅ Selesai" : "❌ Belum" }}
           </button>
@@ -31,11 +27,11 @@
 
 <script setup>
 import { ref, onMounted } from "vue";
+import api from "@/services/api";
 
 const tasks = ref([]);
 const newTask = ref({
   title: "",
-  dueDate: "",
   completed: false,
 });
 
@@ -52,33 +48,26 @@ async function fetchTasks() {
   }
 }
 
-function addTask() {
+async function addTask() {
+  if (!newTask.value.title) return;
+
   const task = {
-    id: Date.now(),
     title: newTask.value.title,
-    dueDate: newTask.value.dueDate,
     completed: false,
   };
-  tasks.value.push(task);
-  saveTasks();
-  newTask.value = { title: "", dueDate: "", completed: false };
+
+  try {
+    const res = await api.post("/todos", task);
+    tasks.value.push(res.data);
+    newTask.value.title = "";
+  } catch (err) {
+    console.error("Gagal menambahkan task:", err);
+  }
 }
 
+// Toggle status selesai (frontend saja)
 function toggleComplete(task) {
   task.completed = !task.completed;
-  saveTasks();
-}
-
-function saveTasks() {
-  localStorage.setItem("tasks", JSON.stringify(tasks.value));
-}
-
-function formatDate(date) {
-  return new Date(date).toLocaleDateString("id-ID", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-  });
 }
 </script>
 
@@ -105,6 +94,7 @@ h1 {
 }
 
 input {
+  flex: 1;
   padding: 8px 10px;
   border: 1px solid #ccc;
   border-radius: 8px;
@@ -117,7 +107,7 @@ button {
   padding: 8px 15px;
   border-radius: 8px;
   cursor: pointer;
-  transition: background-colour 0.3s;
+  transition: background-color 0.3s;
 }
 
 button:hover {
@@ -141,6 +131,10 @@ button:hover {
 
 .done {
   background: #28a745;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 8px;
+  cursor: pointer;
 }
 
 .done:hover {

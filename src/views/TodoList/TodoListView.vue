@@ -9,8 +9,6 @@
           <th>Title</th>
           <th>Description</th>
           <th>Completed</th>
-          <th>Created At</th>
-          <th>Updated At</th>
         </tr>
       </thead>
       <tbody>
@@ -19,8 +17,6 @@
           <td>{{ todo.title }}</td>
           <td>{{ todo.description }}</td>
           <td>{{ todo.completed ? '✅' : '❌' }}</td>
-          <td>{{ formatDate(todo.created_at) }}</td>
-          <td>{{ formatDate(todo.updated_at) }}</td>
         </tr>
       </tbody>
     </table>
@@ -43,26 +39,4 @@ onMounted(async () => {
     console.error("Gagal ambil data:", err);
   }
 });
-
-function formatDate(date: string) {
-  return new Date(date).toLocaleString("id-ID");
-}
 </script>
-
-<style scoped>
-.container {
-  padding: 30px;
-  font-family: Arial, sans-serif;
-}
-table {
-  border-collapse: collapse;
-  width: 100%;
-}
-th, td {
-  border: 1px solid #ccc;
-  padding: 8px;
-}
-th {
-  background-color: #f4f4f4;
-}
-</style>
