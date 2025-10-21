@@ -16,9 +16,12 @@
       <li v-for="task in tasks" :key="task.id">
         <div class="task">
           <strong>{{ task.title }}</strong>
-          <button class="done" @click="toggleComplete(task)">
-            {{ task.completed ? "✅ Selesai" : "❌ Belum" }}
-          </button>
+          <div>
+            <button class="done" @click="toggleComplete(task)">
+              {{ task.completed ? "✅ Selesai" : "❌ Belum" }}
+            </button>
+            <button class="delete" @click="deleteTask(task.id)">🗑️ Hapus</button>
+          </div>
         </div>
       </li>
     </ul>
@@ -35,10 +38,6 @@ const newTask = ref({
   completed: false,
 });
 
-onMounted(async () => {
-  await fetchTasks();
-});
-
 async function fetchTasks() {
   try {
     const res = await api.get("/todos");
@@ -47,6 +46,10 @@ async function fetchTasks() {
     console.error("Gagal ambil data:", err);
   }
 }
+
+onMounted(async () => {
+  await fetchTasks();
+});
 
 async function addTask() {
   if (!newTask.value.title) return;
@@ -58,16 +61,31 @@ async function addTask() {
 
   try {
     const res = await api.post("/todos", task);
-    tasks.value.push(res.data);
+    tasks.value.unshift(res.data); 
     newTask.value.title = "";
   } catch (err) {
     console.error("Gagal menambahkan task:", err);
   }
 }
 
-// Toggle status selesai (frontend saja)
-function toggleComplete(task) {
+async function toggleComplete(task) {
   task.completed = !task.completed;
+
+  try {
+    await api.put(`/todos/${task.id}`, { completed: task.completed });
+  } catch (err) {
+    console.error("Gagal update status:", err);
+    task.completed = !task.completed; 
+  }
+}
+
+async function deleteTask(id) {
+  try {
+    await api.delete(`/todos/${id}`);
+    tasks.value = tasks.value.filter(t => t.id !== id);
+  } catch (err) {
+    console.error("Gagal menghapus task:", err);
+  }
 }
 </script>
 
@@ -101,9 +119,6 @@ input {
 }
 
 button {
-  background: #007bff;
-  color: white;
-  border: none;
   padding: 8px 15px;
   border-radius: 8px;
   cursor: pointer;
@@ -111,7 +126,33 @@ button {
 }
 
 button:hover {
-  background: #0056b3;
+  opacity: 0.9;
+}
+
+.form button {
+  background: #007bff;
+  color: white;
+  border: none;
+}
+
+.done {
+  background: #28a745;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-right: 5px;
+  color: white;
+}
+
+/* tombol hapus */
+.delete {
+  background: #dc3545;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  color: white;
 }
 
 .task-list {
@@ -127,17 +168,5 @@ button:hover {
   margin: 8px 0;
   padding: 10px 15px;
   border-radius: 10px;
-}
-
-.done {
-  background: #28a745;
-  border: none;
-  padding: 5px 10px;
-  border-radius: 8px;
-  cursor: pointer;
-}
-
-.done:hover {
-  background: #218838;
 }
 </style>
